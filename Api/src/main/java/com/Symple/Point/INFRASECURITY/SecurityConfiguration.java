@@ -37,6 +37,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/ponto/baterPonto").hasRole("FUNCIONARIO")
                         .requestMatchers(HttpMethod.GET, "/ponto/pontoDoDia/{idUsuario}").hasRole("FUNCIONARIO")
+                        .requestMatchers(HttpMethod.GET, "/ponto/pontoDoDia").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

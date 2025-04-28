@@ -2,6 +2,7 @@ package com.Symple.Point.CONTROLLER;
 
 import com.Symple.Point.DTO.Entrada.BaterPonto;
 import com.Symple.Point.DTO.Saida.ErroDTO;
+import com.Symple.Point.DTO.Saida.PontosDoDia;
 import com.Symple.Point.ENTITY.HoraPonto;
 import com.Symple.Point.EXCEPTIONS.RegraNegocioException;
 import com.Symple.Point.SERVICE.HoraPontoService;
@@ -34,7 +35,12 @@ public class HoraPontoController {
     }
 
     @GetMapping("/pontoDoDia/{idUsuario}")
-    public ResponseEntity<List<HoraPonto>> pontosDoDia(@PathVariable @Valid Long idUsuario){
-        return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.pontosDoDia(idUsuario));
+    public ResponseEntity<List<HoraPonto>> pontosDoDiaPorId(@PathVariable Long idUsuario){
+        return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.pontosDoDiaPorId(idUsuario));
+    }
+
+    @GetMapping("/pontoDoDia")
+    public ResponseEntity<List<PontosDoDia>> pontosDoDia(){
+        return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.pontosDoDia());
     }
 }
