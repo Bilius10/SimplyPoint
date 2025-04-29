@@ -14,9 +14,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,18 +58,19 @@ public class HoraPontoService {
 
         List<PontosDoDia> pontosDoDias = new ArrayList<>();
 
-        List<Long> ListIdDoDia = horaPontoRepository.findHoraPontoByIdHoraPonto(Date.valueOf("2025-04-27"));
+        List<HoraPonto> listaPontosDoDia = horaPontoRepository.findHoraPontoByIdHoraPonto(Date.valueOf(LocalDate.now()));
 
-        for (int i = 0; i <= ListIdDoDia.size()-1; i++) {
-            List<HoraPonto> byUsuarioAndData = horaPontoRepository.findByUsuarioAndData(Date.valueOf("2025-04-27"),
-                    ListIdDoDia.get(i));
+        Map<Long, List<HoraPonto>> agrupadoPorUsuario = listaPontosDoDia.stream()
+                .collect(Collectors.groupingBy(hp -> hp.getUsuario().getIdUsuario()));
 
-            String nome = byUsuarioAndData.get(0).getUsuario().getNome();
-            List<Time> horasDoPonto = byUsuarioAndData.stream().map(HoraPonto::getHoraDoPonto).toList();
+        for (Map.Entry<Long, List<HoraPonto>> entry : agrupadoPorUsuario.entrySet()) {
+            List<HoraPonto> pontos = entry.getValue();
 
-            PontosDoDia pontoDoDia = new PontosDoDia(nome, horasDoPonto);
-            pontosDoDias.add(pontoDoDia);
+            String nome = pontos.get(0).getUsuario().getNome();
 
+            List<Time> horas = pontos.stream().map(HoraPonto::getHoraDoPonto).collect(Collectors.toList());
+
+            pontosDoDias.add(new PontosDoDia(nome, horas));
         }
         return pontosDoDias;
     }

@@ -17,6 +17,6 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
             "and h.usuario.idUsuario = :idUsuario order by u.nome")
     List<HoraPonto> findByUsuarioAndData(Date data, Long idUsuario);
 
-    @Query("select distinct h.usuario.idUsuario from HoraPonto h where h.data = :data")
-    List<Long> findHoraPontoByIdHoraPonto(Date data);
+    @Query("select h from HoraPonto h JOIN h.usuario u where h.data = :data")
+    List<HoraPonto> findHoraPontoByIdHoraPonto(Date data);
 }

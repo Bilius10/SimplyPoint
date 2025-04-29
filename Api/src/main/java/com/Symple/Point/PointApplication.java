@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PointApplication {
 
-	//dar uma olhada no metodo pontosDoDia no HoraPontoService
+	//arrumar session do frontend
 	public static void main(String[] args) {
 		SpringApplication.run(PointApplication.class, args);
 	}

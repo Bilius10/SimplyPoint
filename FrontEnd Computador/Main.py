@@ -3,12 +3,17 @@ from Login.Registro.Login import login_page
 from Login.Registro.Register import register_page
 from Menu import menu_page
 from OpcoesMenu.PontosDoDia import pontos_do_dia_page
+from OpcoesMenu.EditarUsuario import editar_usuario_page
 
 def main(page: ft.Page):
     page.title = "SymplePoint"
     page.bgcolor = "#000000"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    
+    def on_editar_usuario(event):
+        page.clean()
+        page.add(editar_usuario_page(on_menu))
 
     def on_registro(event):
         page.clean()
@@ -20,7 +25,7 @@ def main(page: ft.Page):
 
     def on_menu(event):
         page.clean()
-        page.add(menu_page(on_login))
+        page.add(menu_page(on_login, on_pontos_do_dia, on_editar_usuario))
 
     def on_pontos_do_dia(event):
         page.clean()

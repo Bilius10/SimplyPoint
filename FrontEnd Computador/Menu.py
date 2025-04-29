@@ -2,7 +2,7 @@ import flet as ft
 from session import session
 
 
-def menu_page(on_login):
+def menu_page(on_login, on_pontos_do_dia, on_editar_usuario):
     logo_image = r"C:\Users\João Vitor\IdeaProjects\SymplePoint\FrontEnd Celular\Imagens\Logo.png"
     image = r"C:\Users\João Vitor\IdeaProjects\SymplePoint\FrontEnd Celular\Imagens\Fundo.png"
 
@@ -25,16 +25,18 @@ def menu_page(on_login):
                 color="#ffffff",
                 width=300,
                 height=50,
+                on_click=on_pontos_do_dia,
                 style=ft.ButtonStyle(
                     shape=ft.RoundedRectangleBorder(radius=10),
                 ),
             ),
             ft.ElevatedButton(
-                text="Editar Funcionário",
+                text="Editar Funcionario",
                 bgcolor="#649ea7",  # Cor da paleta
                 color="#ffffff",
                 width=300,
                 height=50,
+                on_click=on_editar_usuario,
                 style=ft.ButtonStyle(
                     shape=ft.RoundedRectangleBorder(radius=10),
                 ),
