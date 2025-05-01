@@ -16,4 +16,7 @@ public interface UsuarioRepositoy extends JpaRepository<Usuario, Long> {
 
     @Query("SELECT u from Usuario u WHERE u.cpf = :cpf")
     Optional<Usuario> findUsuarioByCpf(String cpf);
+
+    @Query("SELECT u.nome from Usuario u WHERE u.cpf = :cpf")
+    Optional<String> findUsuarioNomeByCpf(String cpf);
 }

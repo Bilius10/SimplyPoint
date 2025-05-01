@@ -14,8 +14,8 @@ def login_page(on_registro, on_menu):
         label="CPF",
         width=400,
         height=50,
-        label_style=ft.TextStyle(color="#8fbfb9"),  # Cor da paleta
-        border_color="#649ea7",  # Cor da paleta
+        label_style=ft.TextStyle(color="#8fbfb9"),  
+        border_color="#649ea7",  
         text_style=ft.TextStyle(color="#000000"),
     )
 

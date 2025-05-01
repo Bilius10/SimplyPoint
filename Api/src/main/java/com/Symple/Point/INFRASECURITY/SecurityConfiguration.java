@@ -39,6 +39,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/ponto/pontoDoDia/{idUsuario}").hasRole("FUNCIONARIO")
                         .requestMatchers(HttpMethod.GET, "/ponto/pontoDoDia").hasRole("RH")
                         .requestMatchers(HttpMethod.PUT, "/infoUsuario").hasRole("RH")
+                        .requestMatchers(HttpMethod.GET, "/ponto/dadosMensais/{cpf}").hasRole("RH")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

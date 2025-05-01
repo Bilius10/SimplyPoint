@@ -1,6 +1,7 @@
 import requests
 import flet as ft
-import session
+import time
+from session import session
 
 def pontos_do_dia_page(on_menu):
     # Verifique se o caminho da imagem está correto
@@ -9,7 +10,7 @@ def pontos_do_dia_page(on_menu):
     # Título da página
     titulo = ft.Text(
         value="Pontos do Dia",
-        color="#649ea7",  # Cor da paleta
+        color="#649ea7",  
         font_family="MinhaFonte",
         size=40,
         weight=ft.FontWeight.BOLD,
@@ -19,7 +20,7 @@ def pontos_do_dia_page(on_menu):
     # Função para buscar os dados da API
     def buscar_dados():
         try:
-            headers = {"Authorization": f"Bearer {session.user_data['token']}"}
+            headers = {"Authorization": f"Bearer {session.user_data.get("token")}"}
 
             response = requests.get("http://localhost:8080/ponto/pontoDoDia",headers=headers)
 

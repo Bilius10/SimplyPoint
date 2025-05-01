@@ -21,7 +21,8 @@ public class InfoUsuarioService {
 
     public InfoUsuario editarInfoUsuario(InfoUsuario infoUsuario, String cpf) throws RegraNegocioException {
 
-        Optional<Usuario> usuarioExiste = usuarioRepositoy.findUsuarioByCpf(cpf);
+        Optional<Usuario> usuarioExiste = usuarioRepositoy.findUsuarioByCpf(
+                cpf.replace(".", "").replace("-", ""));
 
         if(usuarioExiste.isEmpty()){
 

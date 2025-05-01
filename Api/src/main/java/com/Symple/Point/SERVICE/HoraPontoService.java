@@ -1,6 +1,7 @@
 package com.Symple.Point.SERVICE;
 
 import com.Symple.Point.DTO.Entrada.BaterPonto;
+import com.Symple.Point.DTO.Saida.DadosMensaisUsuario;
 import com.Symple.Point.DTO.Saida.EnviarEmailDTO;
 import com.Symple.Point.DTO.Saida.PontosDoDia;
 import com.Symple.Point.ENTITY.HoraPonto;
@@ -74,4 +75,17 @@ public class HoraPontoService {
         }
         return pontosDoDias;
     }
+
+    public DadosMensaisUsuario dadosMensais(String cpf) throws RegraNegocioException {
+
+        Optional<String> nomeUsuario = usuarioRepositoy.findUsuarioNomeByCpf(
+                cpf.replace(".", "").replace("-", ""));
+
+        if(nomeUsuario.isEmpty()){
+            throw new RegraNegocioException("Esse cpf não esta vinculado a nenhum cpf");
+        }
+
+        return null;
+    }
+
 }

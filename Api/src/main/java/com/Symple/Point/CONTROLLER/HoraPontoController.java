@@ -1,6 +1,7 @@
 package com.Symple.Point.CONTROLLER;
 
 import com.Symple.Point.DTO.Entrada.BaterPonto;
+import com.Symple.Point.DTO.Saida.DadosMensaisUsuario;
 import com.Symple.Point.DTO.Saida.ErroDTO;
 import com.Symple.Point.DTO.Saida.PontosDoDia;
 import com.Symple.Point.ENTITY.HoraPonto;
@@ -43,4 +44,10 @@ public class HoraPontoController {
     public ResponseEntity<List<PontosDoDia>> pontosDoDia(){
         return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.pontosDoDia());
     }
+
+    @GetMapping("/dadosMensais/{cpf}")
+    public ResponseEntity<DadosMensaisUsuario> dadosMensais(@PathVariable String cpf){
+        return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensais(cpf));
+    }
+
 }

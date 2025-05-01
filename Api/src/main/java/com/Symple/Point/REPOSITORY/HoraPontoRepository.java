@@ -19,4 +19,5 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
 
     @Query("select h from HoraPonto h JOIN h.usuario u where h.data = :data")
     List<HoraPonto> findHoraPontoByIdHoraPonto(Date data);
+
 }

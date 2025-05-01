@@ -30,7 +30,7 @@ public class InfoUsuarioController {
             InfoUsuario infoUsuario = new InfoUsuario();
             BeanUtils.copyProperties(editarInfoUsuario, infoUsuario,  "cpf");
 
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(infoUsuarioService.editarInfoUsuario(infoUsuario,
+            return ResponseEntity.status(HttpStatus.OK).body(infoUsuarioService.editarInfoUsuario(infoUsuario,
                     editarInfoUsuario.cpf()));
 
         }catch (RegraNegocioException m){
