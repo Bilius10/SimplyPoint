@@ -5,16 +5,21 @@ import com.Symple.Point.DTO.Saida.DadosMensaisUsuario;
 import com.Symple.Point.DTO.Saida.EnviarEmailDTO;
 import com.Symple.Point.DTO.Saida.PontosDoDia;
 import com.Symple.Point.ENTITY.HoraPonto;
+import com.Symple.Point.ENTITY.InfoUsuario;
 import com.Symple.Point.ENTITY.Usuario;
 import com.Symple.Point.EXCEPTIONS.RegraNegocioException;
 import com.Symple.Point.REPOSITORY.HoraPontoRepository;
+import com.Symple.Point.REPOSITORY.InfoUsuarioRepository;
 import com.Symple.Point.REPOSITORY.UsuarioRepositoy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +30,8 @@ public class HoraPontoService {
     private HoraPontoRepository horaPontoRepository;
     @Autowired
     private UsuarioRepositoy usuarioRepositoy;
+    @Autowired
+    private InfoUsuarioRepository infoUsuarioRepository;
     @Autowired
     private EmailService emailService;
 
@@ -59,7 +66,7 @@ public class HoraPontoService {
 
         List<PontosDoDia> pontosDoDias = new ArrayList<>();
 
-        List<HoraPonto> listaPontosDoDia = horaPontoRepository.findHoraPontoByIdHoraPonto(Date.valueOf(LocalDate.now()));
+        List<HoraPonto> listaPontosDoDia = horaPontoRepository.findHoraPontoByData(Date.valueOf(LocalDate.now()));
 
         Map<Long, List<HoraPonto>> agrupadoPorUsuario = listaPontosDoDia.stream()
                 .collect(Collectors.groupingBy(hp -> hp.getUsuario().getIdUsuario()));
@@ -76,16 +83,46 @@ public class HoraPontoService {
         return pontosDoDias;
     }
 
-    public DadosMensaisUsuario dadosMensais(String cpf) throws RegraNegocioException {
+    public DadosMensaisUsuario dadosMensaisPorCpf(String cpf) throws RegraNegocioException {
 
-        Optional<String> nomeUsuario = usuarioRepositoy.findUsuarioNomeByCpf(
+        List<HoraPonto> horas_e_datas_trabalhadas = horaPontoRepository.buscarPorMesEAno(LocalDate.now().getMonth(), LocalDate.now().getYear(),
                 cpf.replace(".", "").replace("-", ""));
 
-        if(nomeUsuario.isEmpty()){
+        if(horas_e_datas_trabalhadas.isEmpty()){
             throw new RegraNegocioException("Esse cpf não esta vinculado a nenhum cpf");
         }
 
-        return null;
+
+        int diasTrabalhados = (int) horas_e_datas_trabalhadas.stream().map(HoraPonto::getData).distinct().count();
+        int diasFaltas = 20 - diasTrabalhados;
+
+        Optional<InfoUsuario> salario_e_cargo = infoUsuarioRepository.findByUsuario(horas_e_datas_trabalhadas.get(0).getUsuario().getIdUsuario());
+
+        if(salario_e_cargo.isEmpty()){
+            throw new RegraNegocioException("Não foi definado o salario e cargo desse funcionario");
+        }
+
+        Double desconto = (diasFaltas*(salario_e_cargo.get().getSalario()/20));
+        double salarioComDesconto = salario_e_cargo.get().getSalario()-desconto;
+
+        Duration horasTrabalhadasNoMes = horas_e_datas_trabalhadas.stream()
+                .collect(Collectors.groupingBy(h -> h.getData().toString()))
+                .values().stream()
+                .map(lista -> {
+                    var horarios = lista.stream()
+                            .map(h -> h.getHoraDoPonto().toLocalTime())
+                            .sorted()
+                            .toList();
+
+                    Duration dia = Duration.ZERO;
+                    for (int i = 0; i + 1 < horarios.size(); i += 2)
+                        dia = dia.plus(Duration.between(horarios.get(i), horarios.get(i + 1)));
+                    return dia;
+                })
+                .reduce(Duration.ZERO, Duration::plus);
+
+        return new DadosMensaisUsuario(horas_e_datas_trabalhadas.get(0).getUsuario().getNome(), diasTrabalhados, diasFaltas,
+                desconto, salarioComDesconto, salario_e_cargo.get().getCargo(), horasTrabalhadasNoMes);
     }
 
 }

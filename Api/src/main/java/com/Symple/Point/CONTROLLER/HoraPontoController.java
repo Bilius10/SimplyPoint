@@ -46,8 +46,16 @@ public class HoraPontoController {
     }
 
     @GetMapping("/dadosMensais/{cpf}")
-    public ResponseEntity<DadosMensaisUsuario> dadosMensais(@PathVariable String cpf){
-        return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensais(cpf));
+    public ResponseEntity<Object> dadosMensais(@PathVariable String cpf) throws RegraNegocioException {
+
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensaisPorCpf(cpf));
+        } catch (RegraNegocioException m) {
+
+            ErroDTO erroDTO = new ErroDTO(m.getMessage());
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroDTO);
+        }
     }
 
 }

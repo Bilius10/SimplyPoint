@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.sql.Date;
+import java.time.Month;
 import java.util.List;
 
 @Repository
@@ -18,6 +19,9 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
     List<HoraPonto> findByUsuarioAndData(Date data, Long idUsuario);
 
     @Query("select h from HoraPonto h JOIN h.usuario u where h.data = :data")
-    List<HoraPonto> findHoraPontoByIdHoraPonto(Date data);
+    List<HoraPonto> findHoraPontoByData(Date data);
 
+    @Query("SELECT h FROM HoraPonto h JOIN h.usuario u WHERE FUNCTION('MONTH', h.data) = :mes AND FUNCTION('YEAR', h.data) = :ano " +
+            "AND u.cpf = :cpf")
+    List<HoraPonto> buscarPorMesEAno(Month mes, int ano, String cpf);
 }
