@@ -53,7 +53,11 @@ public class UsuarioService {
 
     public RegisterDTO register(Usuario usuario) throws RegraNegocioException{
 
-        usuario.formatarCpf();
+        boolean validacaoCpf = usuario.validarCpf();
+
+        if(!validacaoCpf){
+            throw new RegraNegocioException("Cpf invalido");
+        }
 
         Optional<Usuario> jaExiste = usuarioRepositoy.findUsuarioByCpf(usuario.getCpf());
 

@@ -15,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.sql.Date;
 import java.sql.Time;
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,16 +41,26 @@ public class HoraPontoService {
             throw new RegraNegocioException("Usuario não encontrado");
         }
 
+        Long quantidadeDePontosBatidos = horaPontoRepository.countAllByIdUsuario(baterPonto.idUsuario(),
+                Date.valueOf(LocalDate.now()));
+
+        if(quantidadeDePontosBatidos > 4){
+            throw new RegraNegocioException("Usuario já bateu os 4 pontos diarios");
+        }
+
         HoraPonto horaPonto = new HoraPonto();
 
         horaPonto.setUsuario(encontrarUsuario.get());
         horaPonto.setHoraDoPonto(Time.valueOf(LocalTime.now()));
         horaPonto.setData(Date.valueOf(LocalDate.now()));
-
+        horaPonto.setLatitude(baterPonto.latitude());
+        horaPonto.setLongitude(baterPonto.longitude());
         emailService.sendEmail(new EnviarEmailDTO(baterPonto.email(),
                 "Confirmação do Ponto",
-                encontrarUsuario.get().getNome()+" seu ponto foi confirmado as"+
-                        horaPonto.getHoraDoPonto()+" do dia "+horaPonto.getData()));
+                "Usuario: "+encontrarUsuario.get().getNome()+
+                        " \n Horario: "+horaPonto.getHoraDoPonto()+
+                        " \n Data: "+horaPonto.getData()+
+                        " \n Localização: "+baterPonto.latitude()+" "+baterPonto.longitude()));
 
         return horaPontoRepository.save(horaPonto);
     }
@@ -78,7 +86,11 @@ public class HoraPontoService {
 
             List<Time> horas = pontos.stream().map(HoraPonto::getHoraDoPonto).collect(Collectors.toList());
 
-            pontosDoDias.add(new PontosDoDia(nome, horas));
+            List<Float> latitude = pontos.stream().map(HoraPonto::getLatitude).collect(Collectors.toList());
+
+            List<Float> longitude = pontos.stream().map(HoraPonto::getLongitude).collect(Collectors.toList());
+
+            pontosDoDias.add(new PontosDoDia(nome, horas, latitude, longitude));
         }
         return pontosDoDias;
     }

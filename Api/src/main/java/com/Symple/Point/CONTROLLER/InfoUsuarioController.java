@@ -23,7 +23,7 @@ public class InfoUsuarioController {
     private InfoUsuarioService infoUsuarioService;
 
     @PutMapping
-    public ResponseEntity<Object> editarInfoUsuario(@RequestBody @Valid EditarInfoUsuario editarInfoUsuario) throws RegraNegocioException {
+    public ResponseEntity<Object> editarInmfoUsuario(@RequestBody @Valid EditarInfoUsuario editarInfoUsuario) throws RegraNegocioException {
 
         try {
 

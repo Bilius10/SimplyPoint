@@ -47,6 +47,37 @@ public class Usuario implements Serializable, UserDetails {
         this.cpf = getCpf().replace(".", "").replace("-", "");
     }
 
+    public boolean validarCpf() {
+        formatarCpf();
+
+        if (this.cpf == null || this.cpf.length() != 11) {
+            return false;
+        }
+
+        if (this.cpf.matches("(\\d)\\1{10}")) {
+            return false;
+        }
+
+        char[] arrayDoCpf = this.cpf.toCharArray();
+
+        int soma = 0;
+        for (int i = 0; i < 9; i++) {
+            soma += Character.getNumericValue(arrayDoCpf[i]) * (10 - i);
+        }
+        int resto = soma % 11;
+        int digito1 = (resto < 2) ? 0 : 11 - resto;
+
+        soma = 0;
+        for (int i = 0; i < 10; i++) {
+            soma += Character.getNumericValue(arrayDoCpf[i]) * (11 - i);
+        }
+        resto = soma % 11;
+        int digito2 = (resto < 2) ? 0 : 11 - resto;
+
+        return digito1 == Character.getNumericValue(arrayDoCpf[9]) &&
+                digito2 == Character.getNumericValue(arrayDoCpf[10]);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if(this.nivelPermissao == NivelPermissao.RH){

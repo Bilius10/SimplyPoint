@@ -23,6 +23,8 @@ public class HoraPonto implements Serializable {
     private Long idHoraPonto;
     private Date data;
     private Time horaDoPonto;
+    private float latitude;
+    private float longitude;
 
     @OneToOne
     @JsonIgnore
@@ -51,6 +53,22 @@ public class HoraPonto implements Serializable {
 
     public void setHoraDoPonto(Time horaDoPonto) {
         this.horaDoPonto = horaDoPonto;
+    }
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
+    }
+
+    public float getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
     }
 
     public Usuario getUsuario() {

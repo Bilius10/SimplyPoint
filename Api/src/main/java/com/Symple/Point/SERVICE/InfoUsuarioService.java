@@ -29,6 +29,9 @@ public class InfoUsuarioService {
             throw new RegraNegocioException("Cpf não ligado a nenhum funcionario");
         }
 
+        Optional<InfoUsuario> byUsuario = infoUsuarioRepository.findByUsuario(usuarioExiste.get().getIdUsuario());
+
+        infoUsuario.setIdInfoUsuario(byUsuario.get().getIdInfoUsuario());
         infoUsuario.setUsuario(usuarioExiste.get());
 
         return infoUsuarioRepository.save(infoUsuario);

@@ -1,16 +1,15 @@
 import requests
 import flet as ft
-import time
 from session import session
 
+
 def pontos_do_dia_page(on_menu):
-    # Verifique se o caminho da imagem está correto
     image = r"C:\Users\João Vitor\IdeaProjects\SymplePoint\FrontEnd Celular\Imagens\Fundo.png"
 
     # Título da página
     titulo = ft.Text(
         value="Pontos do Dia",
-        color="#649ea7",  
+        color="#649ea7",  # Cor da paleta
         font_family="MinhaFonte",
         size=40,
         weight=ft.FontWeight.BOLD,
@@ -20,9 +19,10 @@ def pontos_do_dia_page(on_menu):
     # Função para buscar os dados da API
     def buscar_dados():
         try:
-            headers = {"Authorization": f"Bearer {session.user_data.get("token")}"}
-
-            response = requests.get("http://localhost:8080/ponto/pontoDoDia",headers=headers)
+            headers = {"Authorization": f"Bearer {session.user_data.get('token', '')}"}
+            
+            response = requests.get(
+                "http://localhost:8080/ponto/pontoDoDia", headers=headers)
 
             if response.status_code == 200:
                 return response.json()  # Retorna os dados do JSON
@@ -39,9 +39,17 @@ def pontos_do_dia_page(on_menu):
 
     for dado in dados_api:
         pontos = dado.get("pontosBatidos", [])
+        latitudes = dado.get("latitude", [])
+        longitudes = dado.get("longitude", [])
+
         # Preenche com valores vazios caso não tenha todos os pontos
-        while len(pontos) < 5:
-            pontos.append("-")
+        while len(pontos) < 4:
+            pontos.append("")
+        while len(latitudes) < 4:
+            latitudes.append("")
+        while len(longitudes) < 4:
+            longitudes.append("")
+
         linhas_tabela.append(
             ft.DataRow(
                 cells=[
@@ -55,6 +63,22 @@ def pontos_do_dia_page(on_menu):
                         ft.Text(pontos[2], text_align=ft.TextAlign.CENTER, color="#000000")),
                     ft.DataCell(
                         ft.Text(pontos[3], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(latitudes[0], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(latitudes[1], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(latitudes[2], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(latitudes[3], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(longitudes[0], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(longitudes[1], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(longitudes[2], text_align=ft.TextAlign.CENTER, color="#000000")),
+                    ft.DataCell(
+                        ft.Text(longitudes[3], text_align=ft.TextAlign.CENTER, color="#000000")),
                 ]
             )
         )
@@ -64,17 +88,32 @@ def pontos_do_dia_page(on_menu):
         columns=[
             ft.DataColumn(ft.Text("Funcionário", weight=ft.FontWeight.BOLD,
                           color="#649ea7", text_align=ft.TextAlign.CENTER)),
-            ft.DataColumn(ft.Text("Entrada", weight=ft.FontWeight.BOLD,
+            ft.DataColumn(ft.Text("Ponto 1", weight=ft.FontWeight.BOLD,
                           color="#649ea7", text_align=ft.TextAlign.CENTER)),
-            ft.DataColumn(ft.Text("Entrada Almoço", weight=ft.FontWeight.BOLD,
+            ft.DataColumn(ft.Text("Ponto 2", weight=ft.FontWeight.BOLD,
                           color="#649ea7", text_align=ft.TextAlign.CENTER)),
-            ft.DataColumn(ft.Text("Saída Almoço", weight=ft.FontWeight.BOLD,
+            ft.DataColumn(ft.Text("Ponto 3", weight=ft.FontWeight.BOLD,
                           color="#649ea7", text_align=ft.TextAlign.CENTER)),
-            ft.DataColumn(ft.Text("Saída", weight=ft.FontWeight.BOLD,
+            ft.DataColumn(ft.Text("Ponto 4", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Latitude 1", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Latitude 2", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Latitude 3", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Latitude 4", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Longitude 1", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Longitude 2", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Longitude 3", weight=ft.FontWeight.BOLD,
+                          color="#649ea7", text_align=ft.TextAlign.CENTER)),
+            ft.DataColumn(ft.Text("Longitude 4", weight=ft.FontWeight.BOLD,
                           color="#649ea7", text_align=ft.TextAlign.CENTER)),
         ],
         rows=linhas_tabela,
-        # Bordas azuis claras
         border=ft.border.all(1, ft.colors.LIGHT_BLUE_200),
         horizontal_lines=True,
         vertical_lines=True,
@@ -110,7 +149,7 @@ def pontos_do_dia_page(on_menu):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=15,
         ),
-        width=500,
+        width=800,
         height=700,
         padding=20,
         border_radius=ft.border_radius.all(50),

@@ -2,7 +2,7 @@ import flet as ft
 import requests
 import time
 from session import session
-
+import geocoder
 
 def telaPonto_page(on_login):
 
@@ -21,11 +21,17 @@ def telaPonto_page(on_login):
 
     def bater_ponto(evento):
         try:
+           
+            localizacao = geocoder.ip('me')
+            lat, lng = localizacao.latlng
+
             data = {
                 "idUsuario": session.user_data.get("idUsuario"),
-                "email": session.user_data.get("email")
+                "email": session.user_data.get("email"),
+                "latitude": lat,
+                "longitude": lng
             }
-
+            print(data)
             header = {"Authorization": "Bearer " +
                       session.user_data.get("token")}
 
@@ -43,6 +49,11 @@ def telaPonto_page(on_login):
             mensagem_api.value = f"Erro ao enviar dados: {e}"
             mensagem_api.color = "#eefaa8"
 
+        mensagem_api.update()
+
+        time.sleep(1)
+
+        mensagem_api.value = ""
         mensagem_api.update()
 
     image = r"C:\Users\João Vitor\IdeaProjects\SymplePoint\FrontEnd Celular\Imagens\Fundo.png"
