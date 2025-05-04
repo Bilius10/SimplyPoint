@@ -10,7 +10,7 @@ def telaPonto_page(on_login):
     header = {"Authorization": "Bearer " + session.user_data.get("token")}
 
     response = requests.get(
-        f"http://localhost:8080/ponto/pontoDoDia/{session.user_data.get("idUsuario")}", headers=header
+        f"http://localhost:8080/ponto/pontoDoDia/id/{session.user_data.get("idUsuario")}", headers=header
     )
     horarios = response.json()
   
@@ -31,7 +31,7 @@ def telaPonto_page(on_login):
                 "latitude": lat,
                 "longitude": lng
             }
-            print(data)
+
             header = {"Authorization": "Bearer " +
                       session.user_data.get("token")}
 

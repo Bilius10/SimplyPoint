@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,5 @@ public interface UsuarioRepositoy extends JpaRepository<Usuario, Long> {
 
     @Query("SELECT u.nome from Usuario u WHERE u.cpf = :cpf")
     Optional<String> findUsuarioNomeByCpf(String cpf);
+
 }

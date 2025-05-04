@@ -31,7 +31,8 @@ public class InfoUsuarioService {
 
         Optional<InfoUsuario> byUsuario = infoUsuarioRepository.findByUsuario(usuarioExiste.get().getIdUsuario());
 
-        infoUsuario.setIdInfoUsuario(byUsuario.get().getIdInfoUsuario());
+        byUsuario.ifPresent(usuario -> infoUsuario.setIdInfoUsuario(usuario.getIdInfoUsuario()));
+
         infoUsuario.setUsuario(usuarioExiste.get());
 
         return infoUsuarioRepository.save(infoUsuario);

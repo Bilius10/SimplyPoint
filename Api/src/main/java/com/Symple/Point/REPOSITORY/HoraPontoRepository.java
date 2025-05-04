@@ -15,8 +15,8 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
     List<HoraPonto> findByUsuarioAndData(Long idUsuario, Date data);
 
     @Query("select h from HoraPonto h JOIN h.usuario u where h.data= :data " +
-            "and h.usuario.idUsuario = :idUsuario order by u.nome")
-    List<HoraPonto> findByUsuarioAndData(Date data, Long idUsuario);
+            "and h.usuario.idUsuario = :idUsuario")
+    List<HoraPonto> findHoraPontoByUsuarioAndData(Long idUsuario, Date data);
 
     @Query("select h from HoraPonto h JOIN h.usuario u where h.data = :data")
     List<HoraPonto> findHoraPontoByData(Date data);
@@ -25,6 +25,6 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
             "AND u.cpf = :cpf")
     List<HoraPonto> buscarPorMesEAno(Month mes, int ano, String cpf);
 
-    @Query("SELECT count(h) FROM HoraPonto h WHERE h.usuario.idUsuario = :idUsuario and h.data = :idUsuario")
-    Long countAllByIdUsuario(Long idUsuario, Date data);
+    @Query("SELECT count(h) FROM HoraPonto h WHERE h.usuario.idUsuario = :idUsuario and h.data = :data")
+    Long countAllByUsuario(Long idUsuario, Date data);
 }

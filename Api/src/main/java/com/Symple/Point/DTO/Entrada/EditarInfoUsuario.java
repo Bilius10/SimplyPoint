@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import java.sql.Time;
 
 public record EditarInfoUsuario(@NotBlank String cpf,
-                                @NotNull Time horaEntrada,
-                                @NotNull Time horaEntradaAlmoco,
-                                @NotNull Time horaSaidaAlmoco,
-                                @NotNull Time horaSaida,
-                                @NotNull Double salario,
-                                @NotBlank String cargo) {
+                                Time horaEntrada,
+                                Time horaEntradaAlmoco,
+                                Time horaSaidaAlmoco,
+                                Time horaSaida,
+                                Double salario,
+                                String cargo) {
 }

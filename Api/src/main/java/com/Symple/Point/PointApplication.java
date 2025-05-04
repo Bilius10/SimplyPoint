@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PointApplication {
 
 	//tentar adicionar um mapa
-	//arrumar a tabela no frontend
 	//ao fim do codigo, refatorar o backend e acabou
+	//threads difeentes para enviar email e bater ponto
 	public static void main(String[] args) {
 		SpringApplication.run(PointApplication.class, args);
 	}

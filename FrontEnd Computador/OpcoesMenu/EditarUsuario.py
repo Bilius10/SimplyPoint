@@ -48,6 +48,10 @@ def editar_usuario_page(on_menu):
         try:
            
             def formatar_hora(valor):
+
+                if(valor == ""):
+                    return "00:00:00"
+                
                 return datetime.strptime(valor, "%H:%M").strftime("%H:%M:%S")
 
            

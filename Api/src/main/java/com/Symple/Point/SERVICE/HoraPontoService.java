@@ -1,9 +1,9 @@
 package com.Symple.Point.SERVICE;
 
 import com.Symple.Point.DTO.Entrada.BaterPonto;
+import com.Symple.Point.DTO.Saida.DadosDiarioUsuario;
 import com.Symple.Point.DTO.Saida.DadosMensaisUsuario;
 import com.Symple.Point.DTO.Saida.EnviarEmailDTO;
-import com.Symple.Point.DTO.Saida.PontosDoDia;
 import com.Symple.Point.ENTITY.HoraPonto;
 import com.Symple.Point.ENTITY.InfoUsuario;
 import com.Symple.Point.ENTITY.Usuario;
@@ -41,7 +41,7 @@ public class HoraPontoService {
             throw new RegraNegocioException("Usuario não encontrado");
         }
 
-        Long quantidadeDePontosBatidos = horaPontoRepository.countAllByIdUsuario(baterPonto.idUsuario(),
+        Long quantidadeDePontosBatidos = horaPontoRepository.countAllByUsuario(baterPonto.idUsuario(),
                 Date.valueOf(LocalDate.now()));
 
         if(quantidadeDePontosBatidos > 4){
@@ -55,12 +55,14 @@ public class HoraPontoService {
         horaPonto.setData(Date.valueOf(LocalDate.now()));
         horaPonto.setLatitude(baterPonto.latitude());
         horaPonto.setLongitude(baterPonto.longitude());
+
         emailService.sendEmail(new EnviarEmailDTO(baterPonto.email(),
                 "Confirmação do Ponto",
                 "Usuario: "+encontrarUsuario.get().getNome()+
                         " \n Horario: "+horaPonto.getHoraDoPonto()+
                         " \n Data: "+horaPonto.getData()+
                         " \n Localização: "+baterPonto.latitude()+" "+baterPonto.longitude()));
+
 
         return horaPontoRepository.save(horaPonto);
     }
@@ -70,30 +72,26 @@ public class HoraPontoService {
         return horaPontoRepository.findByUsuarioAndData(idUsuario, Date.valueOf(LocalDate.now()));
     }
 
-    public List<PontosDoDia> pontosDoDia(){
+    public DadosDiarioUsuario pontosDoDiaPorCPf(String cpf) throws RegraNegocioException {
 
-        List<PontosDoDia> pontosDoDias = new ArrayList<>();
+        Optional<Usuario> usuarioByCpf = usuarioRepositoy.findUsuarioByCpf(cpf.replace(".", "").replace("-", ""));
 
-        List<HoraPonto> listaPontosDoDia = horaPontoRepository.findHoraPontoByData(Date.valueOf(LocalDate.now()));
-
-        Map<Long, List<HoraPonto>> agrupadoPorUsuario = listaPontosDoDia.stream()
-                .collect(Collectors.groupingBy(hp -> hp.getUsuario().getIdUsuario()));
-
-        for (Map.Entry<Long, List<HoraPonto>> entry : agrupadoPorUsuario.entrySet()) {
-            List<HoraPonto> pontos = entry.getValue();
-
-            String nome = pontos.get(0).getUsuario().getNome();
-
-            List<Time> horas = pontos.stream().map(HoraPonto::getHoraDoPonto).collect(Collectors.toList());
-
-            List<Float> latitude = pontos.stream().map(HoraPonto::getLatitude).collect(Collectors.toList());
-
-            List<Float> longitude = pontos.stream().map(HoraPonto::getLongitude).collect(Collectors.toList());
-
-            pontosDoDias.add(new PontosDoDia(nome, horas, latitude, longitude));
+        if(usuarioByCpf.isEmpty()){
+            throw new RegraNegocioException("Cpf não ligado a nenhum funcionario");
         }
-        return pontosDoDias;
+
+        List<HoraPonto> horaPontoByUsuarioAndData = horaPontoRepository.findHoraPontoByUsuarioAndData(usuarioByCpf.get().getIdUsuario(),
+                Date.valueOf(LocalDate.now()));
+
+        List<Time> horas = horaPontoByUsuarioAndData.stream().map(HoraPonto::getHoraDoPonto).toList();
+        List<Float> latitudes = horaPontoByUsuarioAndData.stream().map(HoraPonto::getLatitude).toList();
+        List<Float> longitudes = horaPontoByUsuarioAndData.stream().map(HoraPonto::getLongitude).toList();
+
+        return new DadosDiarioUsuario(horaPontoByUsuarioAndData.get(0).getUsuario().getNome(), horaPontoByUsuarioAndData.get(0).getData(),
+                horas, latitudes,latitudes);
     }
+
+
 
     public DadosMensaisUsuario dadosMensaisPorCpf(String cpf) throws RegraNegocioException {
 
