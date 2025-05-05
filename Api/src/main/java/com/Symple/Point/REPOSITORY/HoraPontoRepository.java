@@ -18,8 +18,6 @@ public interface HoraPontoRepository extends JpaRepository<HoraPonto, Long> {
             "and h.usuario.idUsuario = :idUsuario")
     List<HoraPonto> findHoraPontoByUsuarioAndData(Long idUsuario, Date data);
 
-    @Query("select h from HoraPonto h JOIN h.usuario u where h.data = :data")
-    List<HoraPonto> findHoraPontoByData(Date data);
 
     @Query("SELECT h FROM HoraPonto h JOIN h.usuario u WHERE FUNCTION('MONTH', h.data) = :mes AND FUNCTION('YEAR', h.data) = :ano " +
             "AND u.cpf = :cpf")

@@ -25,7 +25,7 @@ public class HoraPontoController {
 
         try {
 
-            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.baterPonto(baterPonto));
+            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.baterPontoeEnviarEmail(baterPonto));
         }catch (RegraNegocioException m ){
             ErroDTO erroDTO = new ErroDTO(m.getMessage());
 

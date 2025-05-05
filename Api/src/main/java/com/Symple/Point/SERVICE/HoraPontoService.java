@@ -33,6 +33,31 @@ public class HoraPontoService {
     @Autowired
     private EmailService emailService;
 
+    public HoraPonto baterPontoeEnviarEmail(BaterPonto baterPonto) throws RegraNegocioException {
+        try {
+
+
+            EnviarEmailDTO emailDTO = new EnviarEmailDTO(
+                    baterPonto.email(),
+                    "Confirmação do Ponto",
+                    "Horário: " + Time.valueOf(LocalTime.now()) +
+                            "\nData: " + Date.valueOf(LocalDate.now()) +
+                            "\nLocalização: " + baterPonto.latitude() + " " + baterPonto.longitude()
+            );
+
+
+            Thread enviarEmail = new Thread(() -> emailService.sendEmail(emailDTO));
+            enviarEmail.start();
+
+            HoraPonto horaPonto = baterPonto(baterPonto);
+
+            return horaPonto;
+        } catch (RegraNegocioException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
     public HoraPonto baterPonto(BaterPonto baterPonto) throws RegraNegocioException {
 
         Optional<Usuario> encontrarUsuario = usuarioRepositoy.findById(baterPonto.idUsuario());
@@ -55,14 +80,6 @@ public class HoraPontoService {
         horaPonto.setData(Date.valueOf(LocalDate.now()));
         horaPonto.setLatitude(baterPonto.latitude());
         horaPonto.setLongitude(baterPonto.longitude());
-
-        emailService.sendEmail(new EnviarEmailDTO(baterPonto.email(),
-                "Confirmação do Ponto",
-                "Usuario: "+encontrarUsuario.get().getNome()+
-                        " \n Horario: "+horaPonto.getHoraDoPonto()+
-                        " \n Data: "+horaPonto.getData()+
-                        " \n Localização: "+baterPonto.latitude()+" "+baterPonto.longitude()));
-
 
         return horaPontoRepository.save(horaPonto);
     }
@@ -88,7 +105,7 @@ public class HoraPontoService {
         List<Float> longitudes = horaPontoByUsuarioAndData.stream().map(HoraPonto::getLongitude).toList();
 
         return new DadosDiarioUsuario(horaPontoByUsuarioAndData.get(0).getUsuario().getNome(), horaPontoByUsuarioAndData.get(0).getData(),
-                horas, latitudes,latitudes);
+                horas, latitudes,longitudes);
     }
 
 
