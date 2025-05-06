@@ -1,11 +1,9 @@
 package com.Symple.Point.SERVICE;
 
-import com.Symple.Point.DTO.Entrada.EditarInfoUsuario;
 import com.Symple.Point.ENTITY.InfoUsuario;
 import com.Symple.Point.ENTITY.Usuario;
 import com.Symple.Point.EXCEPTIONS.RegraNegocioException;
 import com.Symple.Point.REPOSITORY.InfoUsuarioRepository;
-import com.Symple.Point.REPOSITORY.UsuarioRepositoy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,23 +15,17 @@ public class InfoUsuarioService {
     @Autowired
     private InfoUsuarioRepository infoUsuarioRepository;
     @Autowired
-    private UsuarioRepositoy usuarioRepositoy;
+    private UsuarioService usuarioService;
 
     public InfoUsuario editarInfoUsuario(InfoUsuario infoUsuario, String cpf) throws RegraNegocioException {
 
-        Optional<Usuario> usuarioExiste = usuarioRepositoy.findUsuarioByCpf(
-                cpf.replace(".", "").replace("-", ""));
+        Optional<Usuario> usuarioByCpf = Optional.ofNullable(usuarioService.buscarUsuarioPorCpf(cpf));
 
-        if(usuarioExiste.isEmpty()){
-
-            throw new RegraNegocioException("Cpf não ligado a nenhum funcionario");
-        }
-
-        Optional<InfoUsuario> byUsuario = infoUsuarioRepository.findByUsuario(usuarioExiste.get().getIdUsuario());
+        Optional<InfoUsuario> byUsuario = infoUsuarioRepository.findByUsuario(usuarioByCpf.get().getIdUsuario());
 
         byUsuario.ifPresent(usuario -> infoUsuario.setIdInfoUsuario(usuario.getIdInfoUsuario()));
 
-        infoUsuario.setUsuario(usuarioExiste.get());
+        infoUsuario.setUsuario(usuarioByCpf.get());
 
         return infoUsuarioRepository.save(infoUsuario);
     }

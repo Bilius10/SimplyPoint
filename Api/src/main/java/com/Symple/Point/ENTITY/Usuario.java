@@ -43,12 +43,13 @@ public class Usuario implements Serializable, UserDetails {
         this.enabled = true;
     }
 
-    public void formatarCpf(){
-        this.cpf = getCpf().replace(".", "").replace("-", "");
+    public void formatarCpf(String cpf){
+
+        this.cpf = cpf.replace(".", "").replace("-", "");
     }
 
     public boolean validarCpf() {
-        formatarCpf();
+        formatarCpf(cpf);
 
         if (this.cpf == null || this.cpf.length() != 11) {
             return false;

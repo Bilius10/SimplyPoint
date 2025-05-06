@@ -32,56 +32,63 @@ public class HoraPontoService {
     private InfoUsuarioRepository infoUsuarioRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UsuarioService usuarioService;
 
     public HoraPonto baterPontoeEnviarEmail(BaterPonto baterPonto) throws RegraNegocioException {
-        try {
 
+        EnviarEmailDTO emailDTO = new EnviarEmailDTO(
+                baterPonto.email(),
+                "Confirmação do Ponto",
+                "Horário: " + Time.valueOf(LocalTime.now()) +
+                        "\nData: " + Date.valueOf(LocalDate.now()) +
+                        "\nLocalização: " + baterPonto.latitude() + " " + baterPonto.longitude()
+        );
 
-            EnviarEmailDTO emailDTO = new EnviarEmailDTO(
-                    baterPonto.email(),
-                    "Confirmação do Ponto",
-                    "Horário: " + Time.valueOf(LocalTime.now()) +
-                            "\nData: " + Date.valueOf(LocalDate.now()) +
-                            "\nLocalização: " + baterPonto.latitude() + " " + baterPonto.longitude()
-            );
+        Thread enviarEmail = new Thread(() -> emailService.sendEmail(emailDTO));
+        enviarEmail.start();
 
+        HoraPonto horaPonto = baterPonto(baterPonto);
 
-            Thread enviarEmail = new Thread(() -> emailService.sendEmail(emailDTO));
-            enviarEmail.start();
-
-            HoraPonto horaPonto = baterPonto(baterPonto);
-
-            return horaPonto;
-        } catch (RegraNegocioException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
+        return horaPonto;
     }
 
     public HoraPonto baterPonto(BaterPonto baterPonto) throws RegraNegocioException {
 
-        Optional<Usuario> encontrarUsuario = usuarioRepositoy.findById(baterPonto.idUsuario());
+        Optional<Usuario> encontrarUsuarioPeloId = encontrarUsuarioPeloId(baterPonto.idUsuario());
 
-        if(encontrarUsuario.isEmpty()){
-            throw new RegraNegocioException("Usuario não encontrado");
-        }
-
-        Long quantidadeDePontosBatidos = horaPontoRepository.countAllByUsuario(baterPonto.idUsuario(),
-                Date.valueOf(LocalDate.now()));
-
-        if(quantidadeDePontosBatidos > 4){
-            throw new RegraNegocioException("Usuario já bateu os 4 pontos diarios");
-        }
+        Long quantidadeDePontosBatidos = quantidadeDePontosBatidos(baterPonto.idUsuario());
 
         HoraPonto horaPonto = new HoraPonto();
 
-        horaPonto.setUsuario(encontrarUsuario.get());
+        horaPonto.setUsuario(encontrarUsuarioPeloId.get());
         horaPonto.setHoraDoPonto(Time.valueOf(LocalTime.now()));
         horaPonto.setData(Date.valueOf(LocalDate.now()));
         horaPonto.setLatitude(baterPonto.latitude());
         horaPonto.setLongitude(baterPonto.longitude());
 
         return horaPontoRepository.save(horaPonto);
+    }
+
+    public Optional<Usuario> encontrarUsuarioPeloId(Long id) throws RegraNegocioException {
+        Optional<Usuario> encontrarUsuarioPeloId = usuarioRepositoy.findById(id);
+
+        if(encontrarUsuarioPeloId.isEmpty()){
+            throw new RegraNegocioException("Usuario não encontrado");
+        }
+
+        return encontrarUsuarioPeloId;
+    }
+
+    public Long quantidadeDePontosBatidos(Long id) throws RegraNegocioException {
+        Long quantidadeDePontosBatidos = horaPontoRepository.countAllByUsuario(id,
+                Date.valueOf(LocalDate.now()));
+
+        if(quantidadeDePontosBatidos > 4){
+            throw new RegraNegocioException("Usuario já bateu os 4 pontos diarios");
+        }
+
+        return quantidadeDePontosBatidos;
     }
 
     public List<HoraPonto> pontosDoDiaPorId(Long idUsuario){
@@ -91,48 +98,54 @@ public class HoraPontoService {
 
     public DadosDiarioUsuario pontosDoDiaPorCPf(String cpf) throws RegraNegocioException {
 
-        Optional<Usuario> usuarioByCpf = usuarioRepositoy.findUsuarioByCpf(cpf.replace(".", "").replace("-", ""));
+        Optional<Usuario> usuarioByCpf = Optional.ofNullable(usuarioService.buscarUsuarioPorCpf(cpf));
 
-        if(usuarioByCpf.isEmpty()){
-            throw new RegraNegocioException("Cpf não ligado a nenhum funcionario");
-        }
+        List<HoraPonto> horaPontoByUsuarioAndData = buscarHoraPontoPorIdUsuarioEData(usuarioByCpf.get().getIdUsuario());
 
-        List<HoraPonto> horaPontoByUsuarioAndData = horaPontoRepository.findHoraPontoByUsuarioAndData(usuarioByCpf.get().getIdUsuario(),
+        return criarDadosDiarios(horaPontoByUsuarioAndData);
+    }
+
+    public List<HoraPonto> buscarHoraPontoPorIdUsuarioEData(Long id){
+        return horaPontoRepository.findHoraPontoByUsuarioAndData(id,
                 Date.valueOf(LocalDate.now()));
+    }
 
-        List<Time> horas = horaPontoByUsuarioAndData.stream().map(HoraPonto::getHoraDoPonto).toList();
-        List<Float> latitudes = horaPontoByUsuarioAndData.stream().map(HoraPonto::getLatitude).toList();
-        List<Float> longitudes = horaPontoByUsuarioAndData.stream().map(HoraPonto::getLongitude).toList();
+    public DadosDiarioUsuario criarDadosDiarios(List<HoraPonto> horaPontos){
+        String nome = horaPontos.get(0).getUsuario().getNome();
+        Date data = (Date) horaPontos.get(0).getData();
+        List<Time> horas = horaPontos.stream().map(HoraPonto::getHoraDoPonto).toList();
+        List<Float> latitudes = horaPontos.stream().map(HoraPonto::getLatitude).toList();
+        List<Float> longitudes = horaPontos.stream().map(HoraPonto::getLongitude).toList();
 
-        return new DadosDiarioUsuario(horaPontoByUsuarioAndData.get(0).getUsuario().getNome(), horaPontoByUsuarioAndData.get(0).getData(),
-                horas, latitudes,longitudes);
+        return new DadosDiarioUsuario(nome, data, horas, latitudes,longitudes);
     }
 
 
+    public DadosMensaisUsuario dadosMensais(String cpf) throws RegraNegocioException {
 
-    public DadosMensaisUsuario dadosMensaisPorCpf(String cpf) throws RegraNegocioException {
+        List<HoraPonto> horaPontoPorMeseAno = buscarHoraPontoPorMeseAno(cpf);
 
-        List<HoraPonto> horas_e_datas_trabalhadas = horaPontoRepository.buscarPorMesEAno(LocalDate.now().getMonth(), LocalDate.now().getYear(),
+        Optional<InfoUsuario> usuarioPorId = buscarUsuarioPorId(horaPontoPorMeseAno.get(0).getUsuario().getIdUsuario());
+
+        Duration horasTrabalhadasNoMes = retornarHorasTrabalhadasNoMes(horaPontoPorMeseAno);
+
+        return criarDadosMensais(horaPontoPorMeseAno, usuarioPorId, horasTrabalhadasNoMes);
+    }
+
+    public List<HoraPonto> buscarHoraPontoPorMeseAno(String cpf) throws RegraNegocioException {
+        List<HoraPonto> horaPontosPorMesEAno = horaPontoRepository.buscarPorMesEAno(LocalDate.now().getMonth(),
+                LocalDate.now().getYear(),
                 cpf.replace(".", "").replace("-", ""));
 
-        if(horas_e_datas_trabalhadas.isEmpty()){
-            throw new RegraNegocioException("Esse cpf não esta vinculado a nenhum cpf");
+        if(horaPontosPorMesEAno.isEmpty()){
+            throw new RegraNegocioException("Cpf não vinculado a nenhum funcionario");
         }
 
+        return horaPontosPorMesEAno;
+    }
 
-        int diasTrabalhados = (int) horas_e_datas_trabalhadas.stream().map(HoraPonto::getData).distinct().count();
-        int diasFaltas = 20 - diasTrabalhados;
-
-        Optional<InfoUsuario> salario_e_cargo = infoUsuarioRepository.findByUsuario(horas_e_datas_trabalhadas.get(0).getUsuario().getIdUsuario());
-
-        if(salario_e_cargo.isEmpty()){
-            throw new RegraNegocioException("Não foi definado o salario e cargo desse funcionario");
-        }
-
-        Double desconto = (diasFaltas*(salario_e_cargo.get().getSalario()/20));
-        double salarioComDesconto = salario_e_cargo.get().getSalario()-desconto;
-
-        Duration horasTrabalhadasNoMes = horas_e_datas_trabalhadas.stream()
+    public Duration retornarHorasTrabalhadasNoMes(List<HoraPonto> horaPontos){
+        return horaPontos.stream()
                 .collect(Collectors.groupingBy(h -> h.getData().toString()))
                 .values().stream()
                 .map(lista -> {
@@ -147,9 +160,29 @@ public class HoraPontoService {
                     return dia;
                 })
                 .reduce(Duration.ZERO, Duration::plus);
+    }
 
-        return new DadosMensaisUsuario(horas_e_datas_trabalhadas.get(0).getUsuario().getNome(), diasTrabalhados, diasFaltas,
-                desconto, salarioComDesconto, salario_e_cargo.get().getCargo(), horasTrabalhadasNoMes);
+    public Optional<InfoUsuario> buscarUsuarioPorId(Long id) throws RegraNegocioException {
+        Optional<InfoUsuario> infoUsuarioPorIdUsuario= infoUsuarioRepository.findByUsuario(id);
+
+        if(infoUsuarioPorIdUsuario.isEmpty()){
+            throw new RegraNegocioException("Não foi definado o salario e cargo desse funcionario");
+        }
+
+        return infoUsuarioPorIdUsuario;
+    }
+
+    public DadosMensaisUsuario criarDadosMensais(List<HoraPonto> horaPontoPorMeseAno, Optional<InfoUsuario> usuarioPorId,
+                                                 Duration horasTrabalhadasNoMes){
+
+        int diasTrabalhados = (int) horaPontoPorMeseAno.stream().map(HoraPonto::getData).distinct().count();
+        int diasFaltas = 20 - diasTrabalhados;
+
+        Double desconto = (diasFaltas*(usuarioPorId.get().getSalario()/20));
+        double salarioComDesconto = usuarioPorId.get().getSalario()-desconto;
+
+        return new DadosMensaisUsuario(horaPontoPorMeseAno.get(0).getUsuario().getNome(), diasTrabalhados, diasFaltas,
+                desconto, salarioComDesconto, usuarioPorId.get().getCargo(), horasTrabalhadasNoMes);
     }
 
 }

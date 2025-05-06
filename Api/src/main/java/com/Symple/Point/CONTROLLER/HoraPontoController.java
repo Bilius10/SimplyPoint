@@ -55,7 +55,7 @@ public class HoraPontoController {
     public ResponseEntity<Object> dadosMensais(@PathVariable String cpf) throws RegraNegocioException {
 
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensaisPorCpf(cpf));
+            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensais(cpf));
         } catch (RegraNegocioException m) {
 
             ErroDTO erroDTO = new ErroDTO(m.getMessage());

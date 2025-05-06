@@ -9,11 +9,11 @@ import com.Symple.Point.REPOSITORY.UsuarioRepositoy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,49 +29,62 @@ public class UsuarioService {
     private TokenService tokenService;
 
     public LoginDTO_Resposta login(Usuario usuario) throws RegraNegocioException {
-        usuario.formatarCpf();
 
-        Optional<Usuario> encontreUsuario = usuarioRepositoy.findUsuarioByCpf(usuario.getUsername());
+        Usuario usuarioBanco = buscarUsuarioPorCpf(usuario.getCpf());
 
-        if(encontreUsuario.isEmpty()){
-            throw new RegraNegocioException("Usuario não existe");
-        }
+        validarSenha(usuario.getPassword(), usuarioBanco.getPassword());
 
-        if (!passwordEncoder.matches(usuario.getPassword(), encontreUsuario.get().getPassword())) {
-            throw new RegraNegocioException("Senha incorreta.");
-        }
+        var auth = autenticarUsuario(usuarioBanco.getUsername(), usuario.getSenha());
 
-        var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(encontreUsuario.get().getUsername(),
-                usuario.getSenha());
+        var token = tokenService.generateToken((Usuario) auth.getPrincipal());
 
-        var auth = this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-
-        var token = tokenService.generateToken((com.Symple.Point.ENTITY.Usuario) auth.getPrincipal());
-
-        return new LoginDTO_Resposta(encontreUsuario.get().getIdUsuario(), token,
-                encontreUsuario.get().getNome(), encontreUsuario.get().getEmail());
+        return new LoginDTO_Resposta(usuarioBanco.getIdUsuario(), token,
+                usuarioBanco.getNome(), usuarioBanco.getEmail());
     }
 
-    public RegisterDTO register(Usuario usuario) throws RegraNegocioException{
+    public Usuario buscarUsuarioPorCpf(String cpf) throws RegraNegocioException {
+        Usuario usuario = new Usuario();
+        usuario.formatarCpf(cpf);
 
-        boolean validacaoCpf = usuario.validarCpf();
+        return usuarioRepositoy.findUsuarioByCpf(usuario.getCpf())
+                .orElseThrow(() -> new RegraNegocioException("Usuario não existe"));
+    }
 
-        if(!validacaoCpf){
-            throw new RegraNegocioException("Cpf invalido");
+    public void validarSenha(String senhaDigitada, String senhaCriptografada) throws RegraNegocioException {
+        if (!passwordEncoder.matches(senhaDigitada, senhaCriptografada)) {
+            throw new RegraNegocioException("Senha incorreta");
         }
+    }
 
-        Optional<Usuario> jaExiste = usuarioRepositoy.findUsuarioByCpf(usuario.getCpf());
+    public Authentication autenticarUsuario(String username, String senha) {
+        var authToken = new UsernamePasswordAuthenticationToken(username, senha);
+        return authenticationManager.authenticate(authToken);
+    }
 
-        if (jaExiste.isPresent()) {
-            throw new RegraNegocioException("Cpf já utilizado por outro usuario");
-        }
+    public RegisterDTO register(Usuario usuario) throws RegraNegocioException {
+        validarCpf(usuario);
+        verificarCpfDuplicado(usuario.getCpf());
 
-        String encryptedPassword = new BCryptPasswordEncoder().encode(usuario.getPassword());
-        usuario.setSenha(encryptedPassword);
-
+        usuario.setSenha(criptografarSenha(usuario.getPassword()));
         usuarioRepositoy.save(usuario);
 
         return new RegisterDTO(usuario.getNome(), usuario.getCpf(), usuario.getEmail(), usuario.getSenha());
+    }
+
+    public void validarCpf(Usuario usuario) throws RegraNegocioException {
+        if (!usuario.validarCpf()) {
+            throw new RegraNegocioException("Cpf invalido");
+        }
+    }
+
+    public void verificarCpfDuplicado(String cpf) throws RegraNegocioException {
+        if (usuarioRepositoy.findUsuarioByCpf(cpf).isPresent()) {
+            throw new RegraNegocioException("Cpf já utilizado por outro usuario");
+        }
+    }
+
+    public String criptografarSenha(String senha) {
+        return new BCryptPasswordEncoder().encode(senha);
     }
 
 }
