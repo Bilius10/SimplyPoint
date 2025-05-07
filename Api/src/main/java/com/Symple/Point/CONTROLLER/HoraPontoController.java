@@ -39,7 +39,7 @@ public class HoraPontoController {
     }
 
     @GetMapping("/pontoDoDia/cpf/{cpf}")
-    public ResponseEntity<Object> pontoDoDiaPorCpf(@PathVariable String cpf) throws RegraNegocioException {
+    public ResponseEntity<Object> pontoDoDiaPorCpf(@PathVariable  String cpf) throws RegraNegocioException {
 
         try {
 
@@ -51,11 +51,11 @@ public class HoraPontoController {
         }
     }
 
-    @GetMapping("/dadosMensais/{cpf}")
-    public ResponseEntity<Object> dadosMensais(@PathVariable String cpf) throws RegraNegocioException {
+    @GetMapping("/dadosMensais/{cpf}/{mes}/{ano}")
+    public ResponseEntity<Object> dadosMensais(@PathVariable String cpf, @PathVariable int mes, @PathVariable int ano) throws RegraNegocioException {
 
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensais(cpf));
+            return ResponseEntity.status(HttpStatus.OK).body(horaPontoService.dadosMensais(cpf, mes, ano));
         } catch (RegraNegocioException m) {
 
             ErroDTO erroDTO = new ErroDTO(m.getMessage());

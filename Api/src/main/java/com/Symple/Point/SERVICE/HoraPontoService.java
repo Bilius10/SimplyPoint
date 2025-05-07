@@ -105,14 +105,20 @@ public class HoraPontoService {
         return criarDadosDiarios(horaPontoByUsuarioAndData);
     }
 
-    public List<HoraPonto> buscarHoraPontoPorIdUsuarioEData(Long id){
-        return horaPontoRepository.findHoraPontoByUsuarioAndData(id,
+    public List<HoraPonto> buscarHoraPontoPorIdUsuarioEData(Long id) throws RegraNegocioException {
+        List<HoraPonto> horaPontoByUsuarioAndData = horaPontoRepository.findHoraPontoByUsuarioAndData(id,
                 Date.valueOf(LocalDate.now()));
+
+        if(horaPontoByUsuarioAndData.isEmpty()){
+            throw new RegraNegocioException("Nenhum ponto registrado para esse funcionario");
+        }
+
+        return horaPontoByUsuarioAndData;
     }
 
     public DadosDiarioUsuario criarDadosDiarios(List<HoraPonto> horaPontos){
         String nome = horaPontos.get(0).getUsuario().getNome();
-        Date data = (Date) horaPontos.get(0).getData();
+        Date data = new java.sql.Date(horaPontos.get(0).getData().getTime());
         List<Time> horas = horaPontos.stream().map(HoraPonto::getHoraDoPonto).toList();
         List<Float> latitudes = horaPontos.stream().map(HoraPonto::getLatitude).toList();
         List<Float> longitudes = horaPontos.stream().map(HoraPonto::getLongitude).toList();
@@ -121,9 +127,11 @@ public class HoraPontoService {
     }
 
 
-    public DadosMensaisUsuario dadosMensais(String cpf) throws RegraNegocioException {
+    public DadosMensaisUsuario dadosMensais(String cpf, int mes, int ano) throws RegraNegocioException {
 
-        List<HoraPonto> horaPontoPorMeseAno = buscarHoraPontoPorMeseAno(cpf);
+        verificarMeseAno(mes, ano);
+
+        List<HoraPonto> horaPontoPorMeseAno = buscarHoraPontoPorMeseAno(cpf, mes, ano);
 
         Optional<InfoUsuario> usuarioPorId = buscarUsuarioPorId(horaPontoPorMeseAno.get(0).getUsuario().getIdUsuario());
 
@@ -132,9 +140,18 @@ public class HoraPontoService {
         return criarDadosMensais(horaPontoPorMeseAno, usuarioPorId, horasTrabalhadasNoMes);
     }
 
-    public List<HoraPonto> buscarHoraPontoPorMeseAno(String cpf) throws RegraNegocioException {
-        List<HoraPonto> horaPontosPorMesEAno = horaPontoRepository.buscarPorMesEAno(LocalDate.now().getMonth(),
-                LocalDate.now().getYear(),
+    public void verificarMeseAno(int mes, int ano) throws RegraNegocioException {
+        if(mes <= 0){
+            throw new RegraNegocioException("Mês não existe");
+        }
+        if(ano <= 0){
+            throw new RegraNegocioException("Ano não existe");
+        }
+
+    }
+
+    public List<HoraPonto> buscarHoraPontoPorMeseAno(String cpf, int mes, int ano) throws RegraNegocioException {
+        List<HoraPonto> horaPontosPorMesEAno = horaPontoRepository.buscarPorMesEAno(mes, ano,
                 cpf.replace(".", "").replace("-", ""));
 
         if(horaPontosPorMesEAno.isEmpty()){

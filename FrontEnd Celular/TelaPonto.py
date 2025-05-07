@@ -7,14 +7,22 @@ import geocoder
 def telaPonto_page(on_login):
 
 
-    header = {"Authorization": "Bearer " + session.user_data.get("token")}
+    header = {"Authorization": "Bearer " + session.user_data.get('token', '')}
 
     response = requests.get(
-        f"http://localhost:8080/ponto/pontoDoDia/id/{session.user_data.get("idUsuario")}", headers=header
+        f"http://localhost:8080/ponto/pontoDoDia/id/{session.user_data.get('idUsuario', '')}", headers=header
     )
-    horarios = response.json()
   
+    if response.status_code == 200 and response.text.strip():
+        horarios = response.json()
+    else:
+        horarios = []
+
     def get_horario(index, horarios):
+
+        if not horarios:
+            return "00:00"
+        
         return horarios[index].get("horaDoPonto", "00:00") if index < len(horarios) else "00:00"
 
 

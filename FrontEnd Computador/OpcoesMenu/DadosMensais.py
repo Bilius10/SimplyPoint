@@ -72,9 +72,14 @@ def dados_mensais_page(on_menu):
 
         headers = {"Authorization": f"Bearer {session.user_data.get('token', '')}"
                    }
+        
+        
+        mes_value.value = "0" if not mes_value.value.strip() else mes_value.value
+        ano_value.value = "0" if not ano_value.value.strip() else ano_value.value
+
         try:
             response = requests.get(
-                f"http://localhost:8080/ponto/dadosMensais/{cpf_value.value}", headers=headers
+                f"http://localhost:8080/ponto/dadosMensais/{cpf_value.value}/{mes_value.value}/{ano_value.value}", headers=headers
             )
 
             if response.status_code == 200:
